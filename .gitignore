@@ -1,0 +1,12 @@
+# elm-package generated files
+elm-stuff
+# elm-repl generated files
+repl-temp-*
+
+# Folder to keep files and notes
+# related to this project
+Notes_GitIgnore/
+
+# elm HTML file
+index.html
+
