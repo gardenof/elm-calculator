@@ -1,45 +1,67 @@
-module CalculatorButtonValues exposing (calDecimal, calNumEight, calNumFive, calNumFour, calNumNine, calNumOne, calNumSeven, calNumSix, calNumThree, calNumTwo, calNumZero)
+module CalculatorButtonValues exposing (ButtonType(..), CalButton(..), buttonType, buttonValue)
 
 
-calNumOne =
-    "1"
+type CalButton
+    = CalNumOne
+    | CalNumTwo
+    | CalNumThree
+    | CalNumFour
+    | CalNumFive
+    | CalNumSix
+    | CalNumSeven
+    | CalNumEight
+    | CalNumNine
+    | CalNumZero
+    | CalDecimal
 
 
-calNumTwo =
-    "2"
+type ButtonType
+    = Num
+    | Decimal
 
 
-calNumThree =
-    "3"
+buttonType : CalButton -> ButtonType
+buttonType button =
+    case button of
+        CalDecimal ->
+            Decimal
+
+        _ ->
+            Num
 
 
-calNumFour =
-    "4"
+buttonValue : CalButton -> String
+buttonValue calButton =
+    case calButton of
+        CalNumOne ->
+            "1"
 
+        CalNumTwo ->
+            "2"
 
-calNumFive =
-    "5"
+        CalNumThree ->
+            "3"
 
+        CalNumFour ->
+            "4"
 
-calNumSix =
-    "6"
+        CalNumFive ->
+            "5"
 
+        CalNumSix ->
+            "6"
 
-calNumSeven =
-    "7"
+        CalNumSeven ->
+            "7"
 
+        CalNumEight ->
+            "8"
 
-calNumEight =
-    "8"
+        CalNumNine ->
+            "9"
 
+        CalNumZero ->
+            "0"
 
-calNumNine =
-    "9"
-
-
-calNumZero =
-    "0"
-
-
-calDecimal =
-    "."
+        CalDecimal ->
+            "."

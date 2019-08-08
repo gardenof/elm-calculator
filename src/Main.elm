@@ -36,12 +36,7 @@ init =
 
 
 type Msg
-    = UpdateDisplay String
-
-
-type InputType
-    = Num
-    | Decimal
+    = UpdateDisplay CalButton
 
 
 type DisplayStatus
@@ -54,31 +49,22 @@ type DecimalStatus
     | NoDecimal
 
 
-inputType : String -> InputType
-inputType string =
-    if String.contains "." string then
-        Decimal
-
-    else
-        Num
-
-
-updateDisplay : Model -> String -> Model
+updateDisplay : Model -> CalButton -> Model
 updateDisplay model buttonClicked =
     determineUpdateDisplay model
         buttonClicked
         ( model.displayStatus
-        , inputType buttonClicked
+        , buttonType buttonClicked
         , model.decimalStatus
         )
 
 
-determineUpdateDisplay : Model -> String -> ( DisplayStatus, InputType, DecimalStatus ) -> Model
+determineUpdateDisplay : Model -> CalButton -> ( DisplayStatus, ButtonType, DecimalStatus ) -> Model
 determineUpdateDisplay model buttonClicked tuple =
     case tuple of
         ( Unlocked, Decimal, NoDecimal ) ->
             { model
-                | display = model.display ++ buttonClicked
+                | display = model.display ++ buttonValue buttonClicked
                 , decimalStatus = YesDecimal
             }
 
@@ -86,17 +72,17 @@ determineUpdateDisplay model buttonClicked tuple =
             model
 
         ( Unlocked, Num, _ ) ->
-            { model | display = model.display ++ buttonClicked }
+            { model | display = model.display ++ buttonValue buttonClicked }
 
         ( Locked, Decimal, _ ) ->
             { model
-                | display = calNumZero ++ buttonClicked
+                | display = buttonValue CalNumZero ++ buttonValue buttonClicked
                 , decimalStatus = YesDecimal
                 , displayStatus = Unlocked
             }
 
         ( Locked, Num, _ ) ->
-            { model | display = buttonClicked, displayStatus = Unlocked }
+            { model | display = buttonValue buttonClicked, displayStatus = Unlocked }
 
 
 update : Msg -> Model -> Model
@@ -120,18 +106,62 @@ view model =
             , button [ class "operator" ] [ text "-" ]
             , button [ class "operator" ] [ text "/" ]
             , button [ class "operator" ] [ text "*" ]
-            , button [ class "number", onClick (UpdateDisplay calNumOne) ] [ text calNumOne ]
-            , button [ class "number", onClick (UpdateDisplay calNumTwo) ] [ text calNumTwo ]
-            , button [ class "number", onClick (UpdateDisplay calNumThree) ] [ text calNumThree ]
-            , button [ class "number", onClick (UpdateDisplay calNumFour) ] [ text calNumFour ]
-            , button [ class "number", onClick (UpdateDisplay calNumFive) ] [ text calNumFive ]
-            , button [ class "number", onClick (UpdateDisplay calNumSix) ] [ text calNumSix ]
-            , button [ class "number", onClick (UpdateDisplay calNumSeven) ] [ text calNumSeven ]
-            , button [ class "number", onClick (UpdateDisplay calNumEight) ] [ text calNumEight ]
-            , button [ class "number", onClick (UpdateDisplay calNumNine) ] [ text calNumNine ]
-            , button [ class "number", onClick (UpdateDisplay calNumZero) ] [ text calNumZero ]
+            , button
+                [ class "number"
+                , onClick (UpdateDisplay CalNumOne)
+                ]
+                [ text <| buttonValue CalNumOne ]
+            , button
+                [ class "number"
+                , onClick (UpdateDisplay CalNumTwo)
+                ]
+                [ text <| buttonValue CalNumTwo ]
+            , button
+                [ class "number"
+                , onClick (UpdateDisplay CalNumThree)
+                ]
+                [ text <| buttonValue CalNumThree ]
+            , button
+                [ class "number"
+                , onClick (UpdateDisplay CalNumFour)
+                ]
+                [ text <| buttonValue CalNumFour ]
+            , button
+                [ class "number"
+                , onClick (UpdateDisplay CalNumFive)
+                ]
+                [ text <| buttonValue CalNumFive ]
+            , button
+                [ class "number"
+                , onClick (UpdateDisplay CalNumSix)
+                ]
+                [ text <| buttonValue CalNumSix ]
+            , button
+                [ class "number"
+                , onClick (UpdateDisplay CalNumSeven)
+                ]
+                [ text <| buttonValue CalNumSeven ]
+            , button
+                [ class "number"
+                , onClick (UpdateDisplay CalNumEight)
+                ]
+                [ text <| buttonValue CalNumEight ]
+            , button
+                [ class "number"
+                , onClick (UpdateDisplay CalNumNine)
+                ]
+                [ text <| buttonValue CalNumNine ]
+            , button
+                [ class "number"
+                , onClick (UpdateDisplay CalNumZero)
+                ]
+                [ text <| buttonValue CalNumZero ]
             , button [ class "clearAll" ] [ text "AC" ]
-            , button [ class "decimal", onClick (UpdateDisplay calDecimal) ] [ text calDecimal ]
+            , button
+                [ class "decimal"
+                , onClick <| UpdateDisplay CalDecimal
+                ]
+                [ text <| buttonValue CalDecimal ]
             , button [ class "equal" ] [ text "=" ]
             ]
         ]
