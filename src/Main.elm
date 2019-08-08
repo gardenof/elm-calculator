@@ -65,7 +65,7 @@ inputType string =
 
 updateDisplay : Model -> String -> Model
 updateDisplay model buttonClicked =
-    testUpdateDisplayNumber model
+    determineUpdateDisplay model
         buttonClicked
         ( model.displayStatus
         , inputType buttonClicked
@@ -73,8 +73,8 @@ updateDisplay model buttonClicked =
         )
 
 
-testUpdateDisplayNumber : Model -> String -> ( DisplayStatus, InputType, DecimalStatus ) -> Model
-testUpdateDisplayNumber model buttonClicked tuple =
+determineUpdateDisplay : Model -> String -> ( DisplayStatus, InputType, DecimalStatus ) -> Model
+determineUpdateDisplay model buttonClicked tuple =
     case tuple of
         ( Unlocked, Decimal, NoDecimal ) ->
             { model
@@ -85,30 +85,17 @@ testUpdateDisplayNumber model buttonClicked tuple =
         ( Unlocked, Decimal, YesDecimal ) ->
             model
 
-        ( Unlocked, Num, NoDecimal ) ->
+        ( Unlocked, Num, _ ) ->
             { model | display = model.display ++ buttonClicked }
 
-        ( Unlocked, Num, YesDecimal ) ->
-            { model | display = model.display ++ buttonClicked }
-
-        ( Locked, Decimal, NoDecimal ) ->
+        ( Locked, Decimal, _ ) ->
             { model
                 | display = calNumZero ++ buttonClicked
                 , decimalStatus = YesDecimal
                 , displayStatus = Unlocked
             }
 
-        ( Locked, Decimal, YesDecimal ) ->
-            { model
-                | display = calNumZero ++ buttonClicked
-                , decimalStatus = YesDecimal
-                , displayStatus = Unlocked
-            }
-
-        ( Locked, Num, NoDecimal ) ->
-            { model | display = buttonClicked, displayStatus = Unlocked }
-
-        ( Locked, Num, YesDecimal ) ->
+        ( Locked, Num, _ ) ->
             { model | display = buttonClicked, displayStatus = Unlocked }
 
 
