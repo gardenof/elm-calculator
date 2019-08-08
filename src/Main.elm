@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Browser
+import CalculatorNumbers exposing (..)
 import Css
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -16,12 +17,12 @@ main =
 
 
 type alias Model =
-    {}
+    { display : String }
 
 
 init : Model
 init =
-    {}
+    { display = "0" }
 
 
 
@@ -29,12 +30,14 @@ init =
 
 
 type Msg
-    = Message
+    = UpdateDisplay String
 
 
 update : Msg -> Model -> Model
 update msg model =
-    model
+    case msg of
+        UpdateDisplay updatedNumber ->
+            { model | display = updatedNumber }
 
 
 
@@ -45,22 +48,22 @@ view : Model -> Html Msg
 view model =
     div [ class "calculator" ]
         [ div [] [ Html.node "style" [] [ text Css.css ] ]
-        , div [ class "display" ] [ text "display" ]
+        , div [ class "display" ] [ text model.display ]
         , div [ class "buttons" ]
             [ button [ class "operator" ] [ text "+" ]
             , button [ class "operator" ] [ text "-" ]
             , button [ class "operator" ] [ text "/" ]
             , button [ class "operator" ] [ text "*" ]
-            , button [ class "number" ] [ text "1" ]
-            , button [ class "number" ] [ text "2" ]
-            , button [ class "number" ] [ text "3" ]
-            , button [ class "number" ] [ text "4" ]
-            , button [ class "number" ] [ text "5" ]
-            , button [ class "number" ] [ text "6" ]
-            , button [ class "number" ] [ text "7" ]
-            , button [ class "number" ] [ text "8" ]
-            , button [ class "number" ] [ text "9" ]
-            , button [ class "number" ] [ text "0" ]
+            , button [ class "number", onClick (UpdateDisplay calNumOne) ] [ text calNumOne ]
+            , button [ class "number", onClick (UpdateDisplay calNumTwo) ] [ text calNumTwo ]
+            , button [ class "number", onClick (UpdateDisplay calNumThree) ] [ text calNumThree ]
+            , button [ class "number", onClick (UpdateDisplay calNumFour) ] [ text calNumFour ]
+            , button [ class "number", onClick (UpdateDisplay calNumFive) ] [ text calNumFive ]
+            , button [ class "number", onClick (UpdateDisplay calNumSix) ] [ text calNumSix ]
+            , button [ class "number", onClick (UpdateDisplay calNumSeven) ] [ text calNumSeven ]
+            , button [ class "number", onClick (UpdateDisplay calNumEight) ] [ text calNumEight ]
+            , button [ class "number", onClick (UpdateDisplay calNumNine) ] [ text calNumNine ]
+            , button [ class "number", onClick (UpdateDisplay calNumZero) ] [ text calNumZero ]
             , button [ class "clearAll" ] [ text "AC" ]
             , button [ class "decimal" ] [ text "." ]
             , button [ class "equal" ] [ text "=" ]
