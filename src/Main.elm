@@ -26,7 +26,7 @@ type alias Model =
 init : Model
 init =
     { display = "0"
-    , displayStatus = Locked
+    , displayStatus = ShowingResults
     , decimalStatus = NoDecimal
     }
 
@@ -40,8 +40,8 @@ type Msg
 
 
 type DisplayStatus
-    = Locked
-    | Unlocked
+    = ShowingResults
+    | NotResults
 
 
 type DecimalStatus
@@ -62,27 +62,27 @@ updateDisplay model buttonClicked =
 determineUpdateDisplay : Model -> CalButton -> ( DisplayStatus, ButtonType, DecimalStatus ) -> Model
 determineUpdateDisplay model buttonClicked tuple =
     case tuple of
-        ( Unlocked, Decimal, NoDecimal ) ->
+        ( NotResults, Decimal, NoDecimal ) ->
             { model
                 | display = model.display ++ buttonValue buttonClicked
                 , decimalStatus = YesDecimal
             }
 
-        ( Unlocked, Decimal, YesDecimal ) ->
+        ( NotResults, Decimal, YesDecimal ) ->
             model
 
-        ( Unlocked, Num, _ ) ->
+        ( NotResults, Num, _ ) ->
             { model | display = model.display ++ buttonValue buttonClicked }
 
-        ( Locked, Decimal, _ ) ->
+        ( ShowingResults, Decimal, _ ) ->
             { model
                 | display = buttonValue CalNumZero ++ buttonValue buttonClicked
                 , decimalStatus = YesDecimal
-                , displayStatus = Unlocked
+                , displayStatus = NotResults
             }
 
-        ( Locked, Num, _ ) ->
-            { model | display = buttonValue buttonClicked, displayStatus = Unlocked }
+        ( ShowingResults, Num, _ ) ->
+            { model | display = buttonValue buttonClicked, displayStatus = NotResults }
 
 
 update : Msg -> Model -> Model
