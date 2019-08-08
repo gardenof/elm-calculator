@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Browser
-import CalculatorNumbers exposing (..)
+import CalculatorButtonValues exposing (..)
 import Css
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -17,12 +17,18 @@ main =
 
 
 type alias Model =
-    { display : String }
+    { display : String
+    , displayStatus : DisplayStatus
+    , decimalStatus : DecimalStatus
+    }
 
 
 init : Model
 init =
-    { display = "0" }
+    { display = "0"
+    , displayStatus = Locked
+    , decimalStatus = NoDecimal
+    }
 
 
 
@@ -33,11 +39,84 @@ type Msg
     = UpdateDisplay String
 
 
+type InputType
+    = Num
+    | Decimal
+
+
+type DisplayStatus
+    = Locked
+    | Unlocked
+
+
+type DecimalStatus
+    = YesDecimal
+    | NoDecimal
+
+
+inputType : String -> InputType
+inputType string =
+    if String.contains "." string then
+        Decimal
+
+    else
+        Num
+
+
+updateDisplay : Model -> String -> Model
+updateDisplay model buttonClicked =
+    testUpdateDisplayNumber model
+        buttonClicked
+        ( model.displayStatus
+        , inputType buttonClicked
+        , model.decimalStatus
+        )
+
+
+testUpdateDisplayNumber : Model -> String -> ( DisplayStatus, InputType, DecimalStatus ) -> Model
+testUpdateDisplayNumber model buttonClicked tuple =
+    case tuple of
+        ( Unlocked, Decimal, NoDecimal ) ->
+            { model
+                | display = model.display ++ buttonClicked
+                , decimalStatus = YesDecimal
+            }
+
+        ( Unlocked, Decimal, YesDecimal ) ->
+            model
+
+        ( Unlocked, Num, NoDecimal ) ->
+            { model | display = model.display ++ buttonClicked }
+
+        ( Unlocked, Num, YesDecimal ) ->
+            { model | display = model.display ++ buttonClicked }
+
+        ( Locked, Decimal, NoDecimal ) ->
+            { model
+                | display = calNumZero ++ buttonClicked
+                , decimalStatus = YesDecimal
+                , displayStatus = Unlocked
+            }
+
+        ( Locked, Decimal, YesDecimal ) ->
+            { model
+                | display = calNumZero ++ buttonClicked
+                , decimalStatus = YesDecimal
+                , displayStatus = Unlocked
+            }
+
+        ( Locked, Num, NoDecimal ) ->
+            { model | display = buttonClicked, displayStatus = Unlocked }
+
+        ( Locked, Num, YesDecimal ) ->
+            { model | display = buttonClicked, displayStatus = Unlocked }
+
+
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        UpdateDisplay updatedNumber ->
-            { model | display = updatedNumber }
+        UpdateDisplay buttonClicked ->
+            updateDisplay model buttonClicked
 
 
 
@@ -65,7 +144,7 @@ view model =
             , button [ class "number", onClick (UpdateDisplay calNumNine) ] [ text calNumNine ]
             , button [ class "number", onClick (UpdateDisplay calNumZero) ] [ text calNumZero ]
             , button [ class "clearAll" ] [ text "AC" ]
-            , button [ class "decimal" ] [ text "." ]
+            , button [ class "decimal", onClick (UpdateDisplay calDecimal) ] [ text calDecimal ]
             , button [ class "equal" ] [ text "=" ]
             ]
         ]

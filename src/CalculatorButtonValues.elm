@@ -1,4 +1,4 @@
-module CalculatorNumbers exposing (calNumEight, calNumFive, calNumFour, calNumNine, calNumOne, calNumSeven, calNumSix, calNumThree, calNumTwo, calNumZero)
+module CalculatorButtonValues exposing (calDecimal, calNumEight, calNumFive, calNumFour, calNumNine, calNumOne, calNumSeven, calNumSix, calNumThree, calNumTwo, calNumZero)
 
 
 calNumOne =
@@ -39,3 +39,7 @@ calNumNine =
 
 calNumZero =
     "0"
+
+
+calDecimal =
+    "."
