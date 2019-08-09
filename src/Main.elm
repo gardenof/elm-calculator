@@ -96,6 +96,15 @@ update msg model =
 -- View
 
 
+numberButton : CalButton -> Html Msg
+numberButton button =
+    Html.button
+        [ class "number"
+        , onClick (UpdateDisplay button)
+        ]
+        [ text <| buttonValue button ]
+
+
 view : Model -> Html Msg
 view model =
     div [ class "calculator" ]
@@ -106,56 +115,16 @@ view model =
             , button [ class "operator" ] [ text "-" ]
             , button [ class "operator" ] [ text "/" ]
             , button [ class "operator" ] [ text "*" ]
-            , button
-                [ class "number"
-                , onClick (UpdateDisplay CalNumOne)
-                ]
-                [ text <| buttonValue CalNumOne ]
-            , button
-                [ class "number"
-                , onClick (UpdateDisplay CalNumTwo)
-                ]
-                [ text <| buttonValue CalNumTwo ]
-            , button
-                [ class "number"
-                , onClick (UpdateDisplay CalNumThree)
-                ]
-                [ text <| buttonValue CalNumThree ]
-            , button
-                [ class "number"
-                , onClick (UpdateDisplay CalNumFour)
-                ]
-                [ text <| buttonValue CalNumFour ]
-            , button
-                [ class "number"
-                , onClick (UpdateDisplay CalNumFive)
-                ]
-                [ text <| buttonValue CalNumFive ]
-            , button
-                [ class "number"
-                , onClick (UpdateDisplay CalNumSix)
-                ]
-                [ text <| buttonValue CalNumSix ]
-            , button
-                [ class "number"
-                , onClick (UpdateDisplay CalNumSeven)
-                ]
-                [ text <| buttonValue CalNumSeven ]
-            , button
-                [ class "number"
-                , onClick (UpdateDisplay CalNumEight)
-                ]
-                [ text <| buttonValue CalNumEight ]
-            , button
-                [ class "number"
-                , onClick (UpdateDisplay CalNumNine)
-                ]
-                [ text <| buttonValue CalNumNine ]
-            , button
-                [ class "number"
-                , onClick (UpdateDisplay CalNumZero)
-                ]
-                [ text <| buttonValue CalNumZero ]
+            , numberButton CalNumOne
+            , numberButton CalNumTwo
+            , numberButton CalNumThree
+            , numberButton CalNumFour
+            , numberButton CalNumFive
+            , numberButton CalNumSix
+            , numberButton CalNumSeven
+            , numberButton CalNumEight
+            , numberButton CalNumNine
+            , numberButton CalNumZero
             , button [ class "clearAll" ] [ text "AC" ]
             , button
                 [ class "decimal"
