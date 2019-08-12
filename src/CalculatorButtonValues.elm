@@ -1,4 +1,4 @@
-module CalculatorButtonValues exposing (ButtonType(..), CalButton(..), buttonType, buttonValue)
+module CalculatorButtonValues exposing (Action(..), ButtonType(..), CalButton(..), buttonToAction, buttonType, buttonValue)
 
 
 type CalButton
@@ -13,11 +13,19 @@ type CalButton
     | CalNumNine
     | CalNumZero
     | CalDecimal
+    | CalAdd
+    | CalEqual
 
 
 type ButtonType
     = Num
     | Decimal
+
+
+type Action
+    = Blank
+    | Add
+    | Equals
 
 
 buttonType : CalButton -> ButtonType
@@ -28,6 +36,19 @@ buttonType button =
 
         _ ->
             Num
+
+
+buttonToAction : CalButton -> Action
+buttonToAction button =
+    case button of
+        CalAdd ->
+            Add
+
+        CalEqual ->
+            Equals
+
+        _ ->
+            Blank
 
 
 buttonValue : CalButton -> String
@@ -65,3 +86,9 @@ buttonValue calButton =
 
         CalDecimal ->
             "."
+
+        CalAdd ->
+            "+"
+
+        CalEqual ->
+            "="

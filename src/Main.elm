@@ -20,6 +20,10 @@ type alias Model =
     { display : String
     , displayStatus : DisplayStatus
     , decimalStatus : DecimalStatus
+    , valueA : Float
+    , actionA : Action
+    , valueB : Float
+    , actionB : Action
     }
 
 
@@ -28,15 +32,11 @@ init =
     { display = "0"
     , displayStatus = ShowingResults
     , decimalStatus = NoDecimal
+    , valueA = 0
+    , actionA = Blank
+    , valueB = 0
+    , actionB = Blank
     }
-
-
-
--- Update
-
-
-type Msg
-    = UpdateDisplay CalButton
 
 
 type DisplayStatus
@@ -47,6 +47,94 @@ type DisplayStatus
 type DecimalStatus
     = YesDecimal
     | NoDecimal
+
+
+orderOfOperations : Model -> Model
+orderOfOperations model =
+    case ( model.actionA, model.actionB ) of
+        ( Add, Equals ) ->
+            simpleMath model
+
+        ( Add, Add ) ->
+            simpleMath model
+
+        ( _, _ ) ->
+            model
+
+
+simpleMath : Model -> Model
+simpleMath model =
+    case model.actionA of
+        Add ->
+            { model
+                | display = String.fromFloat <| model.valueA + model.valueB
+                , valueA = 0
+                , actionA = Blank
+                , valueB = 0
+                , actionB = Blank
+                , displayStatus = ShowingResults
+            }
+
+        _ ->
+            model
+
+
+
+-- Update
+
+
+type Msg
+    = UpdateDisplay CalButton
+    | Saveinput CalButton
+
+
+buttonToAction : CalButton -> Action
+buttonToAction button =
+    case button of
+        CalAdd ->
+            Add
+
+        CalEqual ->
+            Equals
+
+        _ ->
+            Blank
+
+
+calActionHit : Model -> CalButton -> Model
+calActionHit model button =
+    orderOfOperations <| saveAction model button
+
+
+saveAction : Model -> CalButton -> Model
+saveAction model button =
+    case ( model.actionA, model.actionB ) of
+        ( Blank, Blank ) ->
+            { model
+                | valueA = displatToFloat model.display
+                , actionA = buttonToAction button
+                , displayStatus = ShowingResults
+            }
+
+        ( _, Blank ) ->
+            { model
+                | valueB = displatToFloat model.display
+                , actionB = buttonToAction button
+                , displayStatus = ShowingResults
+            }
+
+        ( _, _ ) ->
+            model
+
+
+displatToFloat : String -> Float
+displatToFloat string =
+    case String.toFloat string of
+        Just float ->
+            float
+
+        Nothing ->
+            0
 
 
 updateDisplay : Model -> CalButton -> Model
@@ -91,18 +179,12 @@ update msg model =
         UpdateDisplay buttonClicked ->
             updateDisplay model buttonClicked
 
+        Saveinput buttonClicked ->
+            calActionHit model buttonClicked
+
 
 
 -- View
-
-
-numberButton : CalButton -> Html Msg
-numberButton button =
-    Html.button
-        [ class "number"
-        , onClick (UpdateDisplay button)
-        ]
-        [ text <| buttonValue button ]
 
 
 view : Model -> Html Msg
@@ -111,7 +193,7 @@ view model =
         [ div [] [ Html.node "style" [] [ text Css.css ] ]
         , div [ class "display" ] [ text model.display ]
         , div [ class "buttons" ]
-            [ button [ class "operator" ] [ text "+" ]
+            [ actionButton CalAdd
             , button [ class "operator" ] [ text "-" ]
             , button [ class "operator" ] [ text "/" ]
             , button [ class "operator" ] [ text "*" ]
@@ -126,11 +208,86 @@ view model =
             , numberButton CalNumNine
             , numberButton CalNumZero
             , button [ class "clearAll" ] [ text "AC" ]
-            , button
-                [ class "decimal"
-                , onClick <| UpdateDisplay CalDecimal
-                ]
-                [ text <| buttonValue CalDecimal ]
-            , button [ class "equal" ] [ text "=" ]
+            , numberButton CalDecimal
+            , equalButton CalEqual
             ]
+        , devHtml model
         ]
+
+
+numberButton : CalButton -> Html Msg
+numberButton button =
+    Html.button
+        [ class "number"
+        , onClick (UpdateDisplay button)
+        ]
+        [ text <| buttonValue button ]
+
+
+actionButton : CalButton -> Html Msg
+actionButton button =
+    Html.button
+        [ class "operator"
+        , onClick (Saveinput button)
+        ]
+        [ text <| buttonValue button ]
+
+
+equalButton : CalButton -> Html Msg
+equalButton button =
+    Html.button
+        [ class "equal"
+        , onClick (Saveinput button)
+        ]
+        [ text <| buttonValue button ]
+
+
+
+--Dev
+-- On a normal project would not commit below code
+
+
+devHtml : Model -> Html Msg
+devHtml model =
+    Html.div [ class "dev" ]
+        [ div [] [ text "display : ", text model.display ]
+        , div [] [ text "displayStatus : ", text <| displayStatusToString model.displayStatus ]
+        , div [] [ text "decimalStatus : ", text <| decimalStatusToString model.decimalStatus ]
+        , div [] [ text "value A : ", text <| String.fromFloat model.valueA ]
+        , div [] [ text "actionA : ", text <| actionToString model.actionA ]
+        , div [] [ text "value B : ", text <| String.fromFloat model.valueB ]
+        , div [] [ text "actionB : ", text <| actionToString model.actionB ]
+        ]
+
+
+displayStatusToString : DisplayStatus -> String
+displayStatusToString displayStatus =
+    case displayStatus of
+        ShowingResults ->
+            "ShowingResults"
+
+        NotResults ->
+            "NotResults"
+
+
+decimalStatusToString : DecimalStatus -> String
+decimalStatusToString status =
+    case status of
+        YesDecimal ->
+            "YesDecimal"
+
+        NoDecimal ->
+            "NoDecimal"
+
+
+actionToString : Action -> String
+actionToString action =
+    case action of
+        Blank ->
+            "Blank"
+
+        Add ->
+            "Add"
+
+        Equals ->
+            "Equals"
