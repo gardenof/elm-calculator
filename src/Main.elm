@@ -49,19 +49,6 @@ type DecimalStatus
     | NoDecimal
 
 
-orderOfOperations : Model -> Model
-orderOfOperations model =
-    case ( model.actionA, model.actionB ) of
-        ( Add, Equals ) ->
-            executeAdd model
-
-        ( Add, Add ) ->
-            executeAdd model
-
-        ( _, _ ) ->
-            model
-
-
 executeAdd : Model -> Model
 executeAdd model =
     { model
@@ -93,11 +80,6 @@ buttonToAction button =
             Blank
 
 
-calActionHit : Model -> CalButton -> Model
-calActionHit model button =
-    orderOfOperations <| saveAction model button
-
-
 saveAction : Model -> CalButton -> Model
 saveAction model button =
     case ( model.actionA, model.actionB ) of
@@ -108,15 +90,13 @@ saveAction model button =
                 , displayStatus = ShowingResults
             }
 
-        ( _, Blank ) ->
-            { model
-                | valueB = displatToFloat model.display
-                , actionB = buttonToAction button
-                , displayStatus = ShowingResults
-            }
-
         ( _, _ ) ->
-            model
+            executeAdd
+                { model
+                    | valueB = displatToFloat model.display
+                    , actionB = buttonToAction button
+                    , displayStatus = ShowingResults
+                }
 
 
 displatToFloat : String -> Float
@@ -172,7 +152,7 @@ update msg model =
             updateDisplay model buttonClicked
 
         Saveinput buttonClicked ->
-            calActionHit model buttonClicked
+            saveAction model buttonClicked
 
 
 
