@@ -53,30 +53,25 @@ orderOfOperations : Model -> Model
 orderOfOperations model =
     case ( model.actionA, model.actionB ) of
         ( Add, Equals ) ->
-            simpleMath model
+            executeAdd model
 
         ( Add, Add ) ->
-            simpleMath model
+            executeAdd model
 
         ( _, _ ) ->
             model
 
 
-simpleMath : Model -> Model
-simpleMath model =
-    case model.actionA of
-        Add ->
-            { model
-                | display = String.fromFloat <| model.valueA + model.valueB
-                , valueA = 0
-                , actionA = Blank
-                , valueB = 0
-                , actionB = Blank
-                , displayStatus = ShowingResults
-            }
-
-        _ ->
-            model
+executeAdd : Model -> Model
+executeAdd model =
+    { model
+        | display = String.fromFloat <| model.valueA + model.valueB
+        , valueA = 0
+        , actionA = Blank
+        , valueB = 0
+        , actionB = Blank
+        , displayStatus = ShowingResults
+    }
 
 
 
@@ -91,11 +86,8 @@ type Msg
 buttonToAction : CalButton -> Action
 buttonToAction button =
     case button of
-        CalAdd ->
-            Add
-
-        CalEqual ->
-            Equals
+        CalAction action ->
+            action
 
         _ ->
             Blank
@@ -193,7 +185,7 @@ view model =
         [ div [] [ Html.node "style" [] [ text Css.css ] ]
         , div [ class "display" ] [ text model.display ]
         , div [ class "buttons" ]
-            [ actionButton CalAdd
+            [ actionButton (CalAction Add)
             , button [ class "operator" ] [ text "-" ]
             , button [ class "operator" ] [ text "/" ]
             , button [ class "operator" ] [ text "*" ]
@@ -209,7 +201,7 @@ view model =
             , numberButton CalNumZero
             , button [ class "clearAll" ] [ text "AC" ]
             , numberButton CalDecimal
-            , equalButton CalEqual
+            , equalButton (CalAction Equals)
             ]
         , devHtml model
         ]
