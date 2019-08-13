@@ -61,6 +61,18 @@ executeAdd model =
     }
 
 
+executeSubtract : Model -> Model
+executeSubtract model =
+    { model
+        | display = String.fromFloat <| model.valueA - model.valueB
+        , valueA = 0
+        , actionA = Blank
+        , valueB = 0
+        , actionB = Blank
+        , displayStatus = ShowingResults
+    }
+
+
 
 -- Update
 
@@ -83,20 +95,31 @@ buttonToAction button =
 saveAction : Model -> CalButton -> Model
 saveAction model button =
     case ( model.actionA, model.actionB ) of
-        ( Blank, Blank ) ->
+        ( Blank, _ ) ->
             { model
                 | valueA = displatToFloat model.display
                 , actionA = buttonToAction button
                 , displayStatus = ShowingResults
             }
 
-        ( _, _ ) ->
+        ( Add, _ ) ->
             executeAdd
                 { model
                     | valueB = displatToFloat model.display
                     , actionB = buttonToAction button
                     , displayStatus = ShowingResults
                 }
+
+        ( Subtract, _ ) ->
+            executeSubtract
+                { model
+                    | valueB = displatToFloat model.display
+                    , actionB = buttonToAction button
+                    , displayStatus = ShowingResults
+                }
+
+        ( Equals, _ ) ->
+            model
 
 
 displatToFloat : String -> Float
@@ -166,7 +189,7 @@ view model =
         , div [ class "display" ] [ text model.display ]
         , div [ class "buttons" ]
             [ actionButton (CalAction Add)
-            , button [ class "operator" ] [ text "-" ]
+            , actionButton (CalAction Subtract)
             , button [ class "operator" ] [ text "/" ]
             , button [ class "operator" ] [ text "*" ]
             , numberButton CalNumOne
@@ -263,3 +286,6 @@ actionToString action =
 
         Equals ->
             "Equals"
+
+        Subtract ->
+            "Subtract"

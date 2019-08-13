@@ -22,9 +22,10 @@ type ButtonType
 
 
 type Action
-    = Blank
-    | Add
+    = Add
+    | Blank
     | Equals
+    | Subtract
 
 
 buttonType : CalButton -> ButtonType
@@ -81,3 +82,6 @@ buttonValue calButton =
 
         CalAction Equals ->
             "="
+
+        CalAction Subtract ->
+            "-"
