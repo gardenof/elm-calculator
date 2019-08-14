@@ -24,6 +24,7 @@ type ButtonType
 type Action
     = Add
     | Blank
+    | Divide
     | Equals
     | Subtract
     | Multiply
@@ -89,3 +90,6 @@ buttonValue calButton =
 
         CalAction Multiply ->
             "*"
+
+        CalAction Divide ->
+            "/"

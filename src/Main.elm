@@ -85,6 +85,18 @@ executeMultiply model =
     }
 
 
+executeDivide : Model -> Model
+executeDivide model =
+    { model
+        | display = String.fromFloat <| model.valueA / model.valueB
+        , valueA = 0
+        , actionA = Blank
+        , valueB = 0
+        , actionB = Blank
+        , displayStatus = ShowingResults
+    }
+
+
 
 -- Update
 
@@ -132,6 +144,14 @@ saveAction model button =
 
         ( Multiply, _ ) ->
             executeMultiply
+                { model
+                    | valueB = displatToFloat model.display
+                    , actionB = buttonToAction button
+                    , displayStatus = ShowingResults
+                }
+
+        ( Divide, _ ) ->
+            executeDivide
                 { model
                     | valueB = displatToFloat model.display
                     , actionB = buttonToAction button
@@ -210,7 +230,7 @@ view model =
         , div [ class "buttons" ]
             [ actionButton (CalAction Add)
             , actionButton (CalAction Subtract)
-            , button [ class "operator" ] [ text "/" ]
+            , actionButton (CalAction Divide)
             , actionButton (CalAction Multiply)
             , numberButton CalNumOne
             , numberButton CalNumTwo
@@ -312,3 +332,6 @@ actionToString action =
 
         Multiply ->
             "Multiply"
+
+        Divide ->
+            "Divide"
