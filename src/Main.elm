@@ -73,6 +73,18 @@ executeSubtract model =
     }
 
 
+executeMultiply : Model -> Model
+executeMultiply model =
+    { model
+        | display = String.fromFloat <| model.valueA * model.valueB
+        , valueA = 0
+        , actionA = Blank
+        , valueB = 0
+        , actionB = Blank
+        , displayStatus = ShowingResults
+    }
+
+
 
 -- Update
 
@@ -112,6 +124,14 @@ saveAction model button =
 
         ( Subtract, _ ) ->
             executeSubtract
+                { model
+                    | valueB = displatToFloat model.display
+                    , actionB = buttonToAction button
+                    , displayStatus = ShowingResults
+                }
+
+        ( Multiply, _ ) ->
+            executeMultiply
                 { model
                     | valueB = displatToFloat model.display
                     , actionB = buttonToAction button
@@ -191,7 +211,7 @@ view model =
             [ actionButton (CalAction Add)
             , actionButton (CalAction Subtract)
             , button [ class "operator" ] [ text "/" ]
-            , button [ class "operator" ] [ text "*" ]
+            , actionButton (CalAction Multiply)
             , numberButton CalNumOne
             , numberButton CalNumTwo
             , numberButton CalNumThree
@@ -289,3 +309,6 @@ actionToString action =
 
         Subtract ->
             "Subtract"
+
+        Multiply ->
+            "Multiply"

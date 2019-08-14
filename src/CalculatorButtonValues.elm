@@ -26,6 +26,7 @@ type Action
     | Blank
     | Equals
     | Subtract
+    | Multiply
 
 
 buttonType : CalButton -> ButtonType
@@ -85,3 +86,6 @@ buttonValue calButton =
 
         CalAction Subtract ->
             "-"
+
+        CalAction Multiply ->
+            "*"
