@@ -52,13 +52,26 @@ type DecimalStatus
 executeAdd : Model -> Model
 executeAdd model =
     { model
-        | display = String.fromFloat <| model.valueA + model.valueB
+        | display = showResults <| model.valueA + model.valueB
         , valueA = 0
         , actionA = Blank
         , valueB = 0
         , actionB = Blank
         , displayStatus = ShowingResults
     }
+
+
+showResults : Float -> String
+showResults float =
+    let
+        results =
+            String.fromFloat float
+    in
+    if String.length results > 10 then
+        "ERROR"
+
+    else
+        results
 
 
 
