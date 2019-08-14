@@ -116,49 +116,38 @@ buttonToAction button =
             Blank
 
 
+savedValueBs : Model -> CalButton -> Model
+savedValueBs model button =
+    { model
+        | valueB = displatToFloat model.display
+        , actionB = buttonToAction button
+        , displayStatus = ShowingResults
+    }
+
+
 saveAction : Model -> CalButton -> Model
 saveAction model button =
-    case ( model.actionA, model.actionB ) of
-        ( Blank, _ ) ->
+    case model.actionA of
+        Blank ->
             { model
                 | valueA = displatToFloat model.display
                 , actionA = buttonToAction button
                 , displayStatus = ShowingResults
             }
 
-        ( Add, _ ) ->
-            executeAdd
-                { model
-                    | valueB = displatToFloat model.display
-                    , actionB = buttonToAction button
-                    , displayStatus = ShowingResults
-                }
+        Add ->
+            executeAdd <| savedValueBs model button
 
-        ( Subtract, _ ) ->
-            executeSubtract
-                { model
-                    | valueB = displatToFloat model.display
-                    , actionB = buttonToAction button
-                    , displayStatus = ShowingResults
-                }
+        Subtract ->
+            executeSubtract <| savedValueBs model button
 
-        ( Multiply, _ ) ->
-            executeMultiply
-                { model
-                    | valueB = displatToFloat model.display
-                    , actionB = buttonToAction button
-                    , displayStatus = ShowingResults
-                }
+        Multiply ->
+            executeMultiply <| savedValueBs model button
 
-        ( Divide, _ ) ->
-            executeDivide
-                { model
-                    | valueB = displatToFloat model.display
-                    , actionB = buttonToAction button
-                    , displayStatus = ShowingResults
-                }
+        Divide ->
+            executeDivide <| savedValueBs model button
 
-        ( Equals, _ ) ->
+        Equals ->
             model
 
 
