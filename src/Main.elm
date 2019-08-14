@@ -183,7 +183,7 @@ view model =
             , numberButton CalNumEight
             , numberButton CalNumNine
             , numberButton CalNumZero
-            , button [ class "clearAll", onClick AllClear ] [ text "AC" ]
+            , button [ class "allClear", onClick AllClear ] [ text "AC" ]
             , numberButton CalDecimal
             , equalButton (CalAction Equals)
             ]
