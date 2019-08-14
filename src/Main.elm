@@ -68,6 +68,7 @@ executeAdd model =
 type Msg
     = UpdateDisplay CalButton
     | Saveinput CalButton
+    | AllClear
 
 
 buttonToAction : CalButton -> Action
@@ -148,6 +149,9 @@ determineUpdateDisplay model buttonClicked tuple =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
+        AllClear ->
+            init
+
         UpdateDisplay buttonClicked ->
             updateDisplay model buttonClicked
 
@@ -179,7 +183,7 @@ view model =
             , numberButton CalNumEight
             , numberButton CalNumNine
             , numberButton CalNumZero
-            , button [ class "clearAll" ] [ text "AC" ]
+            , button [ class "clearAll", onClick AllClear ] [ text "AC" ]
             , numberButton CalDecimal
             , equalButton (CalAction Equals)
             ]
