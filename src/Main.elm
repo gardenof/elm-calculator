@@ -52,13 +52,38 @@ type DecimalStatus
 executeAdd : Model -> Model
 executeAdd model =
     { model
-        | display = String.fromFloat <| model.valueA + model.valueB
+        | display = showResults <| model.valueA + model.valueB
         , valueA = 0
         , actionA = Blank
         , valueB = 0
         , actionB = Blank
         , displayStatus = ShowingResults
     }
+
+
+showResults : Float -> String
+showResults float =
+    let
+        string =
+            String.fromFloat float
+
+        hasDecimal =
+            String.any (\a -> '.' == a) string
+
+        largerThenTen =
+            case hasDecimal of
+                True ->
+                    String.length string > 11
+
+                False ->
+                    String.length string > 10
+    in
+    case ( string, largerThenTen ) of
+        ( text, False ) ->
+            text
+
+        ( _, True ) ->
+            "ERROR"
 
 
 
