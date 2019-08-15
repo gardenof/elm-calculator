@@ -1,4 +1,4 @@
-module CalculatorButtonValues exposing (Action(..), ButtonType(..), CalButton(..), buttonType, buttonValue)
+module CalculatorButtonValues exposing (Action(..), ButtonType(..), CalButton(..), actionSymbolToString, buttonType, buttonValue)
 
 
 type CalButton
@@ -13,7 +13,6 @@ type CalButton
     | CalNumNine
     | CalNumZero
     | CalDecimal
-    | CalAction Action
 
 
 type ButtonType
@@ -27,6 +26,25 @@ type Action
     | Equals
     | Subtract
     | Multiply
+
+
+actionSymbolToString : Action -> String
+actionSymbolToString action =
+    case action of
+        Add ->
+            "+"
+
+        Divide ->
+            "/"
+
+        Equals ->
+            "="
+
+        Subtract ->
+            "-"
+
+        Multiply ->
+            "*"
 
 
 buttonType : CalButton -> ButtonType
@@ -74,18 +92,3 @@ buttonValue calButton =
 
         CalDecimal ->
             "."
-
-        CalAction Add ->
-            "+"
-
-        CalAction Equals ->
-            "="
-
-        CalAction Subtract ->
-            "-"
-
-        CalAction Multiply ->
-            "*"
-
-        CalAction Divide ->
-            "/"
