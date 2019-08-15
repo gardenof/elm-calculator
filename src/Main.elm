@@ -21,9 +21,9 @@ type alias Model =
     , displayStatus : DisplayStatus
     , decimalStatus : DecimalStatus
     , valueA : Float
-    , actionA : Action
+    , actionA : Maybe Action
     , valueB : Float
-    , actionB : Action
+    , actionB : Maybe Action
     }
 
 
@@ -33,9 +33,9 @@ init =
     , displayStatus = ShowingResults
     , decimalStatus = NoDecimal
     , valueA = 0
-    , actionA = Blank
+    , actionA = Nothing
     , valueB = 0
-    , actionB = Blank
+    , actionB = Nothing
     }
 
 
@@ -54,9 +54,9 @@ executeAdd model =
     { model
         | display = showResults <| model.valueA + model.valueB
         , valueA = 0
-        , actionA = Blank
+        , actionA = Nothing
         , valueB = 0
-        , actionB = Blank
+        , actionB = Nothing
         , displayStatus = ShowingResults
     }
 
@@ -66,9 +66,9 @@ executeSubtract model =
     { model
         | display = String.fromFloat <| model.valueA - model.valueB
         , valueA = 0
-        , actionA = Blank
+        , actionA = Nothing
         , valueB = 0
-        , actionB = Blank
+        , actionB = Nothing
         , displayStatus = ShowingResults
     }
 
@@ -78,9 +78,9 @@ executeMultiply model =
     { model
         | display = String.fromFloat <| model.valueA * model.valueB
         , valueA = 0
-        , actionA = Blank
+        , actionA = Nothing
         , valueB = 0
-        , actionB = Blank
+        , actionB = Nothing
         , displayStatus = ShowingResults
     }
 
@@ -90,9 +90,9 @@ executeDivide model =
     { model
         | display = String.fromFloat <| model.valueA / model.valueB
         , valueA = 0
-        , actionA = Blank
+        , actionA = Nothing
         , valueB = 0
-        , actionB = Blank
+        , actionB = Nothing
         , displayStatus = ShowingResults
     }
 
@@ -132,14 +132,14 @@ type Msg
     | AllClear
 
 
-buttonToAction : CalButton -> Action
+buttonToAction : CalButton -> Maybe Action
 buttonToAction button =
     case button of
         CalAction action ->
-            action
+            Just action
 
         _ ->
-            Blank
+            Nothing
 
 
 savedValueBs : Model -> CalButton -> Model
@@ -154,26 +154,26 @@ savedValueBs model button =
 saveAction : Model -> CalButton -> Model
 saveAction model button =
     case model.actionA of
-        Blank ->
+        Nothing ->
             { model
                 | valueA = displatToFloat model.display
                 , actionA = buttonToAction button
                 , displayStatus = ShowingResults
             }
 
-        Add ->
+        Just Add ->
             executeAdd <| savedValueBs model button
 
-        Subtract ->
+        Just Subtract ->
             executeSubtract <| savedValueBs model button
 
-        Multiply ->
+        Just Multiply ->
             executeMultiply <| savedValueBs model button
 
-        Divide ->
+        Just Divide ->
             executeDivide <| savedValueBs model button
 
-        Equals ->
+        Just Equals ->
             model
 
 
@@ -333,23 +333,23 @@ decimalStatusToString status =
             "NoDecimal"
 
 
-actionToString : Action -> String
+actionToString : Maybe Action -> String
 actionToString action =
     case action of
-        Blank ->
-            "Blank"
-
-        Add ->
+        Just Add ->
             "Add"
 
-        Equals ->
+        Just Equals ->
             "Equals"
 
-        Subtract ->
+        Just Subtract ->
             "Subtract"
 
-        Multiply ->
+        Just Multiply ->
             "Multiply"
 
-        Divide ->
+        Just Divide ->
             "Divide"
+
+        Nothing ->
+            "Nothing"

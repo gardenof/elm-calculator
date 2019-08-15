@@ -23,7 +23,6 @@ type ButtonType
 
 type Action
     = Add
-    | Blank
     | Divide
     | Equals
     | Subtract
@@ -75,9 +74,6 @@ buttonValue calButton =
 
         CalDecimal ->
             "."
-
-        CalAction Blank ->
-            "Blank"
 
         CalAction Add ->
             "+"
