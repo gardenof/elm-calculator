@@ -21,9 +21,9 @@ type alias Model =
     , displayStatus : DisplayStatus
     , decimalStatus : DecimalStatus
     , valueA : Float
-    , actionA : Action
+    , actionA : Maybe Action
     , valueB : Float
-    , actionB : Action
+    , actionB : Maybe Action
     }
 
 
@@ -33,9 +33,9 @@ init =
     , displayStatus = ShowingResults
     , decimalStatus = NoDecimal
     , valueA = 0
-    , actionA = Blank
+    , actionA = Nothing
     , valueB = 0
-    , actionB = Blank
+    , actionB = Nothing
     }
 
 
@@ -52,13 +52,72 @@ type DecimalStatus
 executeAdd : Model -> Model
 executeAdd model =
     { model
-        | display = String.fromFloat <| model.valueA + model.valueB
+        | display = showResults <| model.valueA + model.valueB
         , valueA = 0
-        , actionA = Blank
+        , actionA = Nothing
         , valueB = 0
-        , actionB = Blank
+        , actionB = Nothing
         , displayStatus = ShowingResults
     }
+
+
+executeSubtract : Model -> Model
+executeSubtract model =
+    { model
+        | display = String.fromFloat <| model.valueA - model.valueB
+        , valueA = 0
+        , actionA = Nothing
+        , valueB = 0
+        , actionB = Nothing
+        , displayStatus = ShowingResults
+    }
+
+
+executeMultiply : Model -> Model
+executeMultiply model =
+    { model
+        | display = String.fromFloat <| model.valueA * model.valueB
+        , valueA = 0
+        , actionA = Nothing
+        , valueB = 0
+        , actionB = Nothing
+        , displayStatus = ShowingResults
+    }
+
+
+executeDivide : Model -> Model
+executeDivide model =
+    { model
+        | display = String.fromFloat <| model.valueA / model.valueB
+        , valueA = 0
+        , actionA = Nothing
+        , valueB = 0
+        , actionB = Nothing
+        , displayStatus = ShowingResults
+    }
+
+
+showResults : Float -> String
+showResults float =
+    let
+        string =
+            String.fromFloat float
+
+        hasDecimal =
+            String.any (\a -> '.' == a) string
+
+        largerThanTen =
+            if hasDecimal then
+                String.length string > 11
+
+            else
+                String.length string > 10
+    in
+    if largerThanTen then
+        "ERROR"
+
+    else
+        string
 
 
 
@@ -67,36 +126,43 @@ executeAdd model =
 
 type Msg
     = UpdateDisplay CalButton
-    | Saveinput CalButton
+    | Saveinput Action
+    | AllClear
 
 
-buttonToAction : CalButton -> Action
-buttonToAction button =
-    case button of
-        CalAction action ->
-            action
+savedValueBs : Model -> Action -> Model
+savedValueBs model action =
+    { model
+        | valueB = displatToFloat model.display
+        , actionB = Just action
+        , displayStatus = ShowingResults
+    }
 
-        _ ->
-            Blank
 
-
-saveAction : Model -> CalButton -> Model
-saveAction model button =
-    case ( model.actionA, model.actionB ) of
-        ( Blank, Blank ) ->
+saveAction : Model -> Action -> Model
+saveAction model action =
+    case model.actionA of
+        Nothing ->
             { model
                 | valueA = displatToFloat model.display
-                , actionA = buttonToAction button
+                , actionA = Just action
                 , displayStatus = ShowingResults
             }
 
-        ( _, _ ) ->
-            executeAdd
-                { model
-                    | valueB = displatToFloat model.display
-                    , actionB = buttonToAction button
-                    , displayStatus = ShowingResults
-                }
+        Just Add ->
+            executeAdd <| savedValueBs model action
+
+        Just Subtract ->
+            executeSubtract <| savedValueBs model action
+
+        Just Multiply ->
+            executeMultiply <| savedValueBs model action
+
+        Just Divide ->
+            executeDivide <| savedValueBs model action
+
+        Just Equals ->
+            model
 
 
 displatToFloat : String -> Float
@@ -148,11 +214,14 @@ determineUpdateDisplay model buttonClicked tuple =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
+        AllClear ->
+            init
+
         UpdateDisplay buttonClicked ->
             updateDisplay model buttonClicked
 
-        Saveinput buttonClicked ->
-            saveAction model buttonClicked
+        Saveinput action ->
+            saveAction model action
 
 
 
@@ -165,10 +234,10 @@ view model =
         [ div [] [ Html.node "style" [] [ text Css.css ] ]
         , div [ class "display" ] [ text model.display ]
         , div [ class "buttons" ]
-            [ actionButton (CalAction Add)
-            , button [ class "operator" ] [ text "-" ]
-            , button [ class "operator" ] [ text "/" ]
-            , button [ class "operator" ] [ text "*" ]
+            [ actionButton Add
+            , actionButton Subtract
+            , actionButton Divide
+            , actionButton Multiply
             , numberButton CalNumOne
             , numberButton CalNumTwo
             , numberButton CalNumThree
@@ -179,9 +248,9 @@ view model =
             , numberButton CalNumEight
             , numberButton CalNumNine
             , numberButton CalNumZero
-            , button [ class "clearAll" ] [ text "AC" ]
+            , button [ class "allClear", onClick AllClear ] [ text "AC" ]
             , numberButton CalDecimal
-            , equalButton (CalAction Equals)
+            , equalButton Equals
             ]
         , devHtml model
         ]
@@ -196,22 +265,22 @@ numberButton button =
         [ text <| buttonValue button ]
 
 
-actionButton : CalButton -> Html Msg
-actionButton button =
+actionButton : Action -> Html Msg
+actionButton action =
     Html.button
         [ class "operator"
-        , onClick (Saveinput button)
+        , onClick (Saveinput action)
         ]
-        [ text <| buttonValue button ]
+        [ text <| actionSymbolToString action ]
 
 
-equalButton : CalButton -> Html Msg
-equalButton button =
+equalButton : Action -> Html Msg
+equalButton action =
     Html.button
         [ class "equal"
-        , onClick (Saveinput button)
+        , onClick (Saveinput action)
         ]
-        [ text <| buttonValue button ]
+        [ text <| actionSymbolToString action ]
 
 
 
@@ -252,14 +321,23 @@ decimalStatusToString status =
             "NoDecimal"
 
 
-actionToString : Action -> String
+actionToString : Maybe Action -> String
 actionToString action =
     case action of
-        Blank ->
-            "Blank"
-
-        Add ->
+        Just Add ->
             "Add"
 
-        Equals ->
+        Just Equals ->
             "Equals"
+
+        Just Subtract ->
+            "Subtract"
+
+        Just Multiply ->
+            "Multiply"
+
+        Just Divide ->
+            "Divide"
+
+        Nothing ->
+            "Nothing"
