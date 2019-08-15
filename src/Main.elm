@@ -106,7 +106,7 @@ showResults float =
         hasDecimal =
             String.any (\a -> '.' == a) string
 
-        largerThenTen =
+        largerThanTen =
             case hasDecimal of
                 True ->
                     String.length string > 11
@@ -114,11 +114,11 @@ showResults float =
                 False ->
                     String.length string > 10
     in
-    case ( string, largerThenTen ) of
-        ( text, False ) ->
-            text
+    case largerThanTen of
+        False ->
+            string
 
-        ( _, True ) ->
+        True ->
             "ERROR"
 
 
