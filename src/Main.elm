@@ -64,14 +64,26 @@ executeAdd model =
 showResults : Float -> String
 showResults float =
     let
-        results =
+        string =
             String.fromFloat float
-    in
-    if String.length results > 10 then
-        "ERROR"
 
-    else
-        results
+        hasDecimal =
+            String.any (\a -> '.' == a) string
+
+        largerThenTen =
+            case hasDecimal of
+                True ->
+                    String.length string > 11
+
+                False ->
+                    String.length string > 10
+    in
+    case ( string, largerThenTen ) of
+        ( text, False ) ->
+            text
+
+        ( _, True ) ->
+            "ERROR"
 
 
 
