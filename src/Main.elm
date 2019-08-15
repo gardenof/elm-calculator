@@ -52,7 +52,7 @@ type DecimalStatus
 executeAdd : Model -> Model
 executeAdd model =
     { model
-        | display = String.fromFloat <| model.valueA + model.valueB
+        | display = showResults <| model.valueA + model.valueB
         , valueA = 0
         , actionA = Blank
         , valueB = 0
@@ -97,6 +97,31 @@ executeDivide model =
     }
 
 
+showResults : Float -> String
+showResults float =
+    let
+        string =
+            String.fromFloat float
+
+        hasDecimal =
+            String.any (\a -> '.' == a) string
+
+        largerThenTen =
+            case hasDecimal of
+                True ->
+                    String.length string > 11
+
+                False ->
+                    String.length string > 10
+    in
+    case ( string, largerThenTen ) of
+        ( text, False ) ->
+            text
+
+        ( _, True ) ->
+            "ERROR"
+
+
 
 -- Update
 
@@ -104,6 +129,7 @@ executeDivide model =
 type Msg
     = UpdateDisplay CalButton
     | Saveinput CalButton
+    | AllClear
 
 
 buttonToAction : CalButton -> Action
@@ -200,6 +226,9 @@ determineUpdateDisplay model buttonClicked tuple =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
+        AllClear ->
+            init
+
         UpdateDisplay buttonClicked ->
             updateDisplay model buttonClicked
 
@@ -231,7 +260,7 @@ view model =
             , numberButton CalNumEight
             , numberButton CalNumNine
             , numberButton CalNumZero
-            , button [ class "clearAll" ] [ text "AC" ]
+            , button [ class "allClear", onClick AllClear ] [ text "AC" ]
             , numberButton CalDecimal
             , equalButton (CalAction Equals)
             ]
