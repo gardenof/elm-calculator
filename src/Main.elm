@@ -295,9 +295,9 @@ devHtml model =
         , div [] [ text "displayStatus : ", text <| displayStatusToString model.displayStatus ]
         , div [] [ text "decimalStatus : ", text <| decimalStatusToString model.decimalStatus ]
         , div [] [ text "value A : ", text <| String.fromFloat model.valueA ]
-        , div [] [ text "actionA : ", text <| actionToString model.actionA ]
+        , div [] [ text "actionA : ", text <| maybeActionToString model.actionA ]
         , div [] [ text "value B : ", text <| String.fromFloat model.valueB ]
-        , div [] [ text "actionB : ", text <| actionToString model.actionB ]
+        , div [] [ text "actionB : ", text <| maybeActionToString model.actionB ]
         ]
 
 
@@ -321,8 +321,8 @@ decimalStatusToString status =
             "NoDecimal"
 
 
-actionToString : Maybe Action -> String
-actionToString action =
+maybeActionToString : Maybe Action -> String
+maybeActionToString action =
     case action of
         Just Add ->
             "Add"
