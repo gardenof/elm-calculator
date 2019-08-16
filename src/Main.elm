@@ -49,12 +49,22 @@ type DecimalStatus
     | NoDecimal
 
 
+nextAction : Model -> Maybe Action
+nextAction model =
+    case model.actionB of
+        Just Equals ->
+            Nothing
+
+        action ->
+            action
+
+
 saveResults : Model -> Float -> Model
 saveResults model results =
     { model
         | display = showResults <| results
         , valueA = results
-        , actionA = model.actionB
+        , actionA = nextAction model
         , valueB = 0
         , actionB = Nothing
         , displayStatus = ShowingResults
