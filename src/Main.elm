@@ -49,52 +49,44 @@ type DecimalStatus
     | NoDecimal
 
 
-executeAdd : Model -> Model
-executeAdd model =
+saveResults : Model -> Float -> Model
+saveResults model results =
     { model
-        | display = showResults <| model.valueA + model.valueB
-        , valueA = 0
-        , actionA = Nothing
+        | display = showResults <| results
+        , valueA = results
+        , actionA = model.actionB
         , valueB = 0
         , actionB = Nothing
         , displayStatus = ShowingResults
     }
+
+
+executeAdd : Model -> Model
+executeAdd model =
+    saveResults
+        model
+        (model.valueA + model.valueB)
 
 
 executeSubtract : Model -> Model
 executeSubtract model =
-    { model
-        | display = String.fromFloat <| model.valueA - model.valueB
-        , valueA = 0
-        , actionA = Nothing
-        , valueB = 0
-        , actionB = Nothing
-        , displayStatus = ShowingResults
-    }
+    saveResults
+        model
+        (model.valueA - model.valueB)
 
 
 executeMultiply : Model -> Model
 executeMultiply model =
-    { model
-        | display = String.fromFloat <| model.valueA * model.valueB
-        , valueA = 0
-        , actionA = Nothing
-        , valueB = 0
-        , actionB = Nothing
-        , displayStatus = ShowingResults
-    }
+    saveResults
+        model
+        (model.valueA * model.valueB)
 
 
 executeDivide : Model -> Model
 executeDivide model =
-    { model
-        | display = String.fromFloat <| model.valueA / model.valueB
-        , valueA = 0
-        , actionA = Nothing
-        , valueB = 0
-        , actionB = Nothing
-        , displayStatus = ShowingResults
-    }
+    saveResults
+        model
+        (model.valueA / model.valueB)
 
 
 showResults : Float -> String
@@ -143,11 +135,15 @@ saveAction : Model -> Action -> Model
 saveAction model action =
     case model.actionA of
         Nothing ->
-            { model
-                | valueA = displatToFloat model.display
-                , actionA = Just action
-                , displayStatus = ShowingResults
-            }
+            if action == Equals then
+                model
+
+            else
+                { model
+                    | valueA = displatToFloat model.display
+                    , actionA = Just action
+                    , displayStatus = ShowingResults
+                }
 
         Just Add ->
             executeAdd <| savedValueBs model action
