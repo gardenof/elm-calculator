@@ -49,52 +49,54 @@ type DecimalStatus
     | NoDecimal
 
 
-executeAdd : Model -> Model
-executeAdd model =
+nextAction : Model -> Maybe Action
+nextAction model =
+    case model.actionB of
+        Just Equals ->
+            Nothing
+
+        action ->
+            action
+
+
+saveResults : Model -> Float -> Model
+saveResults model results =
     { model
-        | display = showResults <| model.valueA + model.valueB
-        , valueA = 0
-        , actionA = Nothing
+        | display = showResults <| results
+        , valueA = results
+        , actionA = nextAction model
         , valueB = 0
         , actionB = Nothing
         , displayStatus = ShowingResults
     }
+
+
+executeAdd : Model -> Model
+executeAdd model =
+    saveResults
+        model
+        (model.valueA + model.valueB)
 
 
 executeSubtract : Model -> Model
 executeSubtract model =
-    { model
-        | display = String.fromFloat <| model.valueA - model.valueB
-        , valueA = 0
-        , actionA = Nothing
-        , valueB = 0
-        , actionB = Nothing
-        , displayStatus = ShowingResults
-    }
+    saveResults
+        model
+        (model.valueA - model.valueB)
 
 
 executeMultiply : Model -> Model
 executeMultiply model =
-    { model
-        | display = String.fromFloat <| model.valueA * model.valueB
-        , valueA = 0
-        , actionA = Nothing
-        , valueB = 0
-        , actionB = Nothing
-        , displayStatus = ShowingResults
-    }
+    saveResults
+        model
+        (model.valueA * model.valueB)
 
 
 executeDivide : Model -> Model
 executeDivide model =
-    { model
-        | display = String.fromFloat <| model.valueA / model.valueB
-        , valueA = 0
-        , actionA = Nothing
-        , valueB = 0
-        , actionB = Nothing
-        , displayStatus = ShowingResults
-    }
+    saveResults
+        model
+        (model.valueA / model.valueB)
 
 
 showResults : Float -> String
@@ -143,11 +145,15 @@ saveAction : Model -> Action -> Model
 saveAction model action =
     case model.actionA of
         Nothing ->
-            { model
-                | valueA = displatToFloat model.display
-                , actionA = Just action
-                , displayStatus = ShowingResults
-            }
+            if action == Equals then
+                model
+
+            else
+                { model
+                    | valueA = displatToFloat model.display
+                    , actionA = Just action
+                    , displayStatus = ShowingResults
+                }
 
         Just Add ->
             executeAdd <| savedValueBs model action
@@ -295,9 +301,9 @@ devHtml model =
         , div [] [ text "displayStatus : ", text <| displayStatusToString model.displayStatus ]
         , div [] [ text "decimalStatus : ", text <| decimalStatusToString model.decimalStatus ]
         , div [] [ text "value A : ", text <| String.fromFloat model.valueA ]
-        , div [] [ text "actionA : ", text <| actionToString model.actionA ]
+        , div [] [ text "actionA : ", text <| maybeActionToString model.actionA ]
         , div [] [ text "value B : ", text <| String.fromFloat model.valueB ]
-        , div [] [ text "actionB : ", text <| actionToString model.actionB ]
+        , div [] [ text "actionB : ", text <| maybeActionToString model.actionB ]
         ]
 
 
@@ -321,8 +327,8 @@ decimalStatusToString status =
             "NoDecimal"
 
 
-actionToString : Maybe Action -> String
-actionToString action =
+maybeActionToString : Maybe Action -> String
+maybeActionToString action =
     case action of
         Just Add ->
             "Add"
