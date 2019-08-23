@@ -24,6 +24,7 @@ type alias Model =
     , actionA : Maybe Action
     , valueB : Float
     , actionB : Maybe Action
+    , dismantledNum : NumberParts
     }
 
 
@@ -36,6 +37,7 @@ init =
     , actionA = Nothing
     , valueB = 0
     , actionB = Nothing
+    , dismantledNum = { total = 0, beforeDecimal = 0, afterDecimal = 0 }
     }
 
 
@@ -45,14 +47,83 @@ type DisplayStatus
 
 
 type DecimalStatus
-    = YesDecimal
-    | NoDecimal
+    = NoDecimal
+    | ClickedDecimal
+    | HasDecimal
 
 
 type ActionType
     = AddSubtractType
     | MultiplyDivideType
     | EqualsType
+
+
+type alias NumberParts =
+    { total : Float
+    , beforeDecimal : Float
+    , afterDecimal : Float
+    }
+
+
+concatNumbers : Model -> Float -> Model
+concatNumbers model num2 =
+    let
+        dismantledNumShortcut =
+            model.dismantledNum
+    in
+    case model.decimalStatus of
+        HasDecimal ->
+            let
+                newNum =
+                    (dismantledNumShortcut.afterDecimal * 10) + num2
+
+                newDismantledNum =
+                    buildTotal
+                        { dismantledNumShortcut | afterDecimal = newNum }
+            in
+            { model
+                | display = String.fromFloat model.dismantledNum.beforeDecimal ++ "." ++ String.fromFloat newNum
+                , dismantledNum = newDismantledNum
+            }
+
+        ClickedDecimal ->
+            { model
+                | display = String.fromFloat model.dismantledNum.beforeDecimal ++ "."
+                , decimalStatus = HasDecimal
+            }
+
+        NoDecimal ->
+            let
+                newNum =
+                    (dismantledNumShortcut.beforeDecimal * 10) + num2
+
+                newDismantledNum =
+                    buildTotal
+                        { dismantledNumShortcut | beforeDecimal = newNum }
+            in
+            { model
+                | display = String.fromFloat newNum
+                , dismantledNum = newDismantledNum
+            }
+
+
+buildTotal : NumberParts -> NumberParts
+buildTotal numberModel =
+    { numberModel
+        | total =
+            numberModel.beforeDecimal
+                + divideByPowerOfLength numberModel.afterDecimal
+    }
+
+
+divideByPowerOfLength : Float -> Float
+divideByPowerOfLength afterDecimal =
+    afterDecimal / toFloat (10 ^ lengthOfFloat afterDecimal)
+
+
+lengthOfFloat : Float -> Int
+lengthOfFloat float =
+    String.length <| String.fromFloat float
 
 
 
@@ -91,7 +162,7 @@ saveActionA model action =
 
     else
         { model
-            | valueA = displatToFloat model.display
+            | valueA = model.dismantledNum.total
             , actionA = Just action
             , displayStatus = ShowingResults
         }
@@ -132,7 +203,7 @@ saveActionB : Model -> Action -> Model
 saveActionB model action =
     { model
         | displayStatus = ShowingResults
-        , valueB = displatToFloat model.display
+        , valueB = model.dismantledNum.total
         , actionB = Just action
     }
 
@@ -140,14 +211,20 @@ saveActionB model action =
 doMathOnAandNewAction : Model -> Action -> Action -> Model
 doMathOnAandNewAction model actionA newAction =
     let
+        newNum =
+            model.dismantledNum
+
         results =
             simpleMath
                 model.valueA
                 actionA
-                (displatToFloat model.display)
+                newNum.total
+
+        newDismantledNum =
+            { newNum | total = results }
     in
     { model
-        | display = showResults <| results
+        | display = showResults newDismantledNum.total
         , displayStatus = ShowingResults
         , valueA = results
         , actionA = Just newAction
@@ -192,19 +269,29 @@ checkActionBandNewAction model actionA actionB newAction =
 doMathOnBandNewAction : Model -> Action -> Action -> Action -> Model
 doMathOnBandNewAction model actionA actionB newAction =
     let
+        dismantledNumShortcut =
+            model.dismantledNum
+
         results =
             simpleMath
                 model.valueB
                 actionB
-                (displatToFloat model.display)
+                dismantledNumShortcut.total
+
+        newDismantledNum =
+            { dismantledNumShortcut | total = results }
+
+        newModel =
+            { model
+                | display = showResults newDismantledNum.total
+                , displayStatus = ShowingResults
+                , valueB = 0
+                , actionB = Nothing
+                , dismantledNum = newDismantledNum
+            }
     in
     checkActionAandNewAction
-        { model
-            | display = showResults <| results
-            , displayStatus = ShowingResults
-            , valueB = 0
-            , actionB = Nothing
-        }
+        newModel
         actionA
         newAction
 
@@ -245,16 +332,6 @@ showResults float =
         results
 
 
-displatToFloat : String -> Float
-displatToFloat string =
-    case String.toFloat string of
-        Just float ->
-            float
-
-        Nothing ->
-            0
-
-
 updateDisplay : Model -> CalButton -> Model
 updateDisplay model buttonClicked =
     determineUpdateDisplay model
@@ -267,28 +344,61 @@ updateDisplay model buttonClicked =
 
 determineUpdateDisplay : Model -> CalButton -> ( DisplayStatus, ButtonType, DecimalStatus ) -> Model
 determineUpdateDisplay model buttonClicked tuple =
+    let
+        dismantledNumShortcut =
+            model.dismantledNum
+    in
     case tuple of
-        ( NotResults, Decimal, NoDecimal ) ->
+        ( ShowingResults, Num, _ ) ->
+            let
+                newNum =
+                    buttonFloatValue buttonClicked
+
+                newDismantledNum =
+                    buildTotal
+                        { dismantledNumShortcut
+                            | beforeDecimal = newNum
+                            , afterDecimal = 0
+                        }
+            in
             { model
-                | display = model.display ++ buttonValue buttonClicked
-                , decimalStatus = YesDecimal
+                | display = showResults newDismantledNum.total
+                , displayStatus = NotResults
+                , dismantledNum = newDismantledNum
             }
-
-        ( NotResults, Decimal, YesDecimal ) ->
-            model
-
-        ( NotResults, Num, _ ) ->
-            { model | display = model.display ++ buttonValue buttonClicked }
 
         ( ShowingResults, Decimal, _ ) ->
-            { model
-                | display = buttonValue CalNumZero ++ buttonValue buttonClicked
-                , decimalStatus = YesDecimal
-                , displayStatus = NotResults
-            }
+            concatNumbers
+                { model
+                    | decimalStatus = ClickedDecimal
+                    , displayStatus = NotResults
+                    , dismantledNum =
+                        { dismantledNumShortcut
+                            | beforeDecimal = 0
+                            , afterDecimal = 0
+                        }
+                }
+                (buttonFloatValue buttonClicked)
 
-        ( ShowingResults, Num, _ ) ->
-            { model | display = buttonValue buttonClicked, displayStatus = NotResults }
+        ( NotResults, Num, _ ) ->
+            concatNumbers
+                { model
+                    | displayStatus = NotResults
+                }
+                (buttonFloatValue buttonClicked)
+
+        ( NotResults, Decimal, NoDecimal ) ->
+            concatNumbers
+                { model | decimalStatus = ClickedDecimal }
+                (buttonFloatValue buttonClicked)
+
+        ( NotResults, Decimal, HasDecimal ) ->
+            model
+
+        ( NotResults, Decimal, ClickedDecimal ) ->
+            concatNumbers
+                { model | decimalStatus = HasDecimal }
+                (buttonFloatValue buttonClicked)
 
 
 update : Msg -> Model -> Model
@@ -378,6 +488,9 @@ devHtml model =
         , div [] [ text "actionA : ", text <| maybeActionToString model.actionA ]
         , div [] [ text "value B : ", text <| String.fromFloat model.valueB ]
         , div [] [ text "actionB : ", text <| maybeActionToString model.actionB ]
+        , div [] [ text "beforeDecimal : ", text <| String.fromFloat model.dismantledNum.beforeDecimal ]
+        , div [] [ text "afterDecimal : ", text <| String.fromFloat model.dismantledNum.afterDecimal ]
+        , div [] [ text "full number : ", text <| String.fromFloat model.dismantledNum.total ]
         ]
 
 
@@ -394,11 +507,14 @@ displayStatusToString displayStatus =
 decimalStatusToString : DecimalStatus -> String
 decimalStatusToString status =
     case status of
-        YesDecimal ->
-            "YesDecimal"
+        HasDecimal ->
+            "HasDecimal"
 
         NoDecimal ->
             "NoDecimal"
+
+        ClickedDecimal ->
+            "ClickedDecimal"
 
 
 maybeActionToString : Maybe Action -> String
