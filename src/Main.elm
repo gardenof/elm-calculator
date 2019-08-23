@@ -49,77 +49,10 @@ type DecimalStatus
     | NoDecimal
 
 
-nextAction : Model -> Maybe Action
-nextAction model =
-    case model.actionB of
-        Just Equals ->
-            Nothing
-
-        action ->
-            action
-
-
-saveResults : Model -> Float -> Model
-saveResults model results =
-    { model
-        | display = showResults <| results
-        , valueA = results
-        , actionA = nextAction model
-        , valueB = 0
-        , actionB = Nothing
-        , displayStatus = ShowingResults
-    }
-
-
-executeAdd : Model -> Model
-executeAdd model =
-    saveResults
-        model
-        (model.valueA + model.valueB)
-
-
-executeSubtract : Model -> Model
-executeSubtract model =
-    saveResults
-        model
-        (model.valueA - model.valueB)
-
-
-executeMultiply : Model -> Model
-executeMultiply model =
-    saveResults
-        model
-        (model.valueA * model.valueB)
-
-
-executeDivide : Model -> Model
-executeDivide model =
-    saveResults
-        model
-        (model.valueA / model.valueB)
-
-
-showResults : Float -> String
-showResults float =
-    let
-        string =
-            String.fromFloat float
-
-        hasDecimal =
-            String.any (\a -> '.' == a) string
-
-        largerThanTen =
-            if hasDecimal then
-                String.length string > 11
-
-            else
-                String.length string > 10
-    in
-    if largerThanTen then
-        "ERROR"
-
-    else
-        string
+type ActionType
+    = AddSubtractType
+    | MultiplyDivideType
+    | EqualsType
 
 
 
@@ -132,43 +65,184 @@ type Msg
     | AllClear
 
 
-savedValueBs : Model -> Action -> Model
-savedValueBs model action =
+saveAction : Model -> Action -> Model
+saveAction model newAction =
+    case ( model.actionA, model.actionB ) of
+        ( Just Equals, Nothing ) ->
+            saveActionA model newAction
+
+        ( Nothing, Nothing ) ->
+            saveActionA model newAction
+
+        ( Just a, Nothing ) ->
+            checkActionAandNewAction model a newAction
+
+        ( Just a, Just b ) ->
+            checkActionBandNewAction model a b newAction
+
+        ( Nothing, Just b ) ->
+            model
+
+
+saveActionA : Model -> Action -> Model
+saveActionA model action =
+    if action == Equals then
+        model
+
+    else
+        { model
+            | valueA = displatToFloat model.display
+            , actionA = Just action
+            , displayStatus = ShowingResults
+        }
+
+
+actionTypeOf : Action -> ActionType
+actionTypeOf action =
+    case action of
+        Add ->
+            AddSubtractType
+
+        Subtract ->
+            AddSubtractType
+
+        Multiply ->
+            MultiplyDivideType
+
+        Divide ->
+            MultiplyDivideType
+
+        Equals ->
+            EqualsType
+
+
+checkActionAandNewAction : Model -> Action -> Action -> Model
+checkActionAandNewAction model actionA newAction =
+    if
+        (actionTypeOf actionA == actionTypeOf newAction)
+            || (newAction == Equals)
+    then
+        doMathOnAandNewAction model actionA newAction
+
+    else
+        saveActionB model newAction
+
+
+saveActionB : Model -> Action -> Model
+saveActionB model action =
     { model
-        | valueB = displatToFloat model.display
+        | displayStatus = ShowingResults
+        , valueB = displatToFloat model.display
         , actionB = Just action
-        , displayStatus = ShowingResults
     }
 
 
-saveAction : Model -> Action -> Model
-saveAction model action =
-    case model.actionA of
-        Nothing ->
-            if action == Equals then
-                model
+doMathOnAandNewAction : Model -> Action -> Action -> Model
+doMathOnAandNewAction model actionA newAction =
+    let
+        results =
+            simpleMath
+                model.valueA
+                actionA
+                (displatToFloat model.display)
+    in
+    { model
+        | display = showResults <| results
+        , displayStatus = ShowingResults
+        , valueA = results
+        , actionA = Just newAction
+        , valueB = 0
+        , actionB = Nothing
+    }
+
+
+simpleMath : Float -> Action -> Float -> Float
+simpleMath numOne action numTwo =
+    case action of
+        Add ->
+            numOne + numTwo
+
+        Subtract ->
+            numOne - numTwo
+
+        Multiply ->
+            numOne * numTwo
+
+        Divide ->
+            numOne / numTwo
+
+        Equals ->
+            numOne
+
+
+checkActionBandNewAction : Model -> Action -> Action -> Action -> Model
+checkActionBandNewAction model actionA actionB newAction =
+    if
+        (actionTypeOf actionB == actionTypeOf newAction)
+            || ((actionTypeOf actionA == AddSubtractType)
+                    && (actionTypeOf actionB == MultiplyDivideType)
+               )
+    then
+        doMathOnBandNewAction model actionA actionB newAction
+
+    else
+        doMathOnAandB model actionA actionB newAction
+
+
+doMathOnBandNewAction : Model -> Action -> Action -> Action -> Model
+doMathOnBandNewAction model actionA actionB newAction =
+    let
+        results =
+            simpleMath
+                model.valueB
+                actionB
+                (displatToFloat model.display)
+    in
+    checkActionAandNewAction
+        { model
+            | display = showResults <| results
+            , displayStatus = ShowingResults
+            , valueB = 0
+            , actionB = Nothing
+        }
+        actionA
+        newAction
+
+
+doMathOnAandB : Model -> Action -> Action -> Action -> Model
+doMathOnAandB model actionA actionB newAction =
+    checkActionAandNewAction
+        { model
+            | valueA = simpleMath model.valueA actionA model.valueB
+            , actionA = Just actionB
+            , valueB = 0
+            , actionB = Nothing
+        }
+        actionB
+        newAction
+
+
+showResults : Float -> String
+showResults float =
+    let
+        results =
+            String.fromFloat float
+
+        hasDecimal =
+            String.any (\a -> '.' == a) results
+
+        largerThanTen =
+            if hasDecimal then
+                String.length results > 11
 
             else
-                { model
-                    | valueA = displatToFloat model.display
-                    , actionA = Just action
-                    , displayStatus = ShowingResults
-                }
+                String.length results > 10
+    in
+    if largerThanTen then
+        "ERROR"
 
-        Just Add ->
-            executeAdd <| savedValueBs model action
-
-        Just Subtract ->
-            executeSubtract <| savedValueBs model action
-
-        Just Multiply ->
-            executeMultiply <| savedValueBs model action
-
-        Just Divide ->
-            executeDivide <| savedValueBs model action
-
-        Just Equals ->
-            model
+    else
+        results
 
 
 displatToFloat : String -> Float
